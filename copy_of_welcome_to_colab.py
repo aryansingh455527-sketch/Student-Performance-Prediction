@@ -30,10 +30,9 @@ from sklearn.metrics import (
     classification_report
 )
 
-#file_path = '/content/student_performance_dataset (1).csv'
-#df = pd.read_csv(file_path)
-#df = pd.read_csv("data/student_performance_dataset.csv")
-df = pd.read_csv("student_performance_dataset.csv")
+file_path = '/content/student_performance_dataset (1).csv'
+df = pd.read_csv(file_path)
+
 
 print("Sample DataFrame Head:")
 display(df.head())
