@@ -3,7 +3,7 @@
 This is a Machine Learning project built using Python and Streamlit.
 
 ## Files
--app.py
+ app.py
 - student_performance_dataset.csv
 - requirements.txt
 
