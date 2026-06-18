@@ -13,7 +13,7 @@ Original file is located at
 
 import pandas as pd
 import matplotlib.pyplot as plt
-#import seaborn as sns
+import seaborn as sns
 import xgboost as xgb
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold, cross_val_score
 from sklearn.linear_model import LinearRegression, LogisticRegression
