@@ -14,7 +14,7 @@ Original file is located at
 import pandas as pd
 import matplotlib.pyplot as plt
 #import seaborn as sns
-
+import xgboost as xgb
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold, cross_val_score
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
@@ -29,8 +29,6 @@ from sklearn.metrics import (
     f1_score,
     classification_report
 )
-import xgboost as xgb
-
 
 file_path = '/content/student_performance_dataset (1).csv'
 df = pd.read_csv(file_path)
