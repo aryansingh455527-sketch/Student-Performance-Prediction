@@ -32,7 +32,9 @@ from sklearn.metrics import (
 df = pd.read_csv("student_performance_dataset (1).csv")
 
 print("Sample DataFrame Head:")
-display(df.head())
+import streamlit as st
+
+st.write(df.head())
 print(f"Total number of rows: {len(df)}")
 
 """## 2. Data Cleaning"""
