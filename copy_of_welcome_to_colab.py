@@ -44,7 +44,7 @@ df.fillna(df.mean(numeric_only=True), inplace=True)
 
 print("Data Cleaning Completed")
 print("DataFrame after cleaning (head):")
-display(df.head())
+st.write(df.head())
 
 """## 3. Feature Engineering"""
 
@@ -56,7 +56,7 @@ df["PerformanceIndex"] = (
 ) / 4
 
 print("DataFrame with 'PerformanceIndex' feature:")
-display(df.head())
+st.write(df.head())
 
 """## 4. Exploratory Data Analysis (EDA)
 
@@ -66,7 +66,7 @@ display(df.head())
 print("DataFrame Info:")
 df.info()
 print("\nDescriptive Statistics:")
-display(df.describe())
+st.write(df.head())
 
 """### Visualizing Data Distributions and Relationships"""
 
