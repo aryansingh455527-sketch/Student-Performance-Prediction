@@ -29,9 +29,8 @@ from sklearn.metrics import (
     f1_score,
     classification_report
 )
+df = pd.read_csv("data/student_performance_dataset.csv")
 
-
-df = pd.read_csv("student_performance_dataset.csv")
 
 
 print("Sample DataFrame Head:")
