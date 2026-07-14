@@ -15,6 +15,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import xgboost as xgb
+import os
+import joblib
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold, cross_val_score
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
@@ -36,6 +38,8 @@ import streamlit as st
 
 st.write(df.head())
 print(f"Total number of rows: {len(df)}")
+# prepare models directory for saving trained models
+os.makedirs("models", exist_ok=True)
 
 """## 2. Data Cleaning"""
 
@@ -76,34 +80,39 @@ plt.title('Distribution of Final Marks')
 plt.xlabel('Final Marks')
 plt.ylabel('Frequency')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
-plt.show()
+st.pyplot(plt.gcf())
+plt.clf()
 plt.figure(figsize=(8, 6))
 sns.scatterplot(x='StudyHours', y='FinalMarks', data=df)
 plt.title('Study Hours vs. Final Marks')
 plt.xlabel('Study Hours Per Day')
 plt.ylabel('Final Marks')
 plt.grid(linestyle='--', alpha=0.7)
-plt.show()
+st.pyplot(plt.gcf())
+plt.clf()
 plt.figure(figsize=(8, 6))
 sns.scatterplot(x='PerformanceIndex', y='FinalMarks', data=df)
 plt.title('Performance Index vs. Final Marks')
 plt.xlabel('Performance Index')
 plt.ylabel('Final Marks')
 plt.grid(linestyle='--', alpha=0.7)
-plt.show()
+st.pyplot(plt.gcf())
+plt.clf()
 plt.figure(figsize=(8, 6))
 sns.boxplot(y=df['FinalMarks'])
 plt.title('Boxplot of Final Marks')
 plt.ylabel('Final Marks')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
-plt.show()
+st.pyplot(plt.gcf())
+plt.clf()
 
 """### Correlation Matrix"""
 
 plt.figure(figsize=(10, 8))
 sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Matrix of Features')
-plt.show()
+st.pyplot(plt.gcf())
+plt.clf()
 
 """## 5. Regression Task: Predicting FinalMarks
 
@@ -158,49 +167,36 @@ rf_mae, rf_r2 = train_evaluate_regression_model(rf_model, X_train, y_train, X_te
 xgb_model = xgb.XGBRegressor(random_state=42)
 xgb_mae, xgb_r2 = train_evaluate_regression_model(xgb_model, X_train, y_train, X_test, y_test, "XGBoost")
 
+# Persist trained sklearn-wrapped models with joblib so Streamlit can load them safely
+try:
+    joblib.dump(linear_model, os.path.join("models", "linear_model.joblib"))
+    joblib.dump(rf_model, os.path.join("models", "rf_model.joblib"))
+    joblib.dump(xgb_model, os.path.join("models", "xgb_model.joblib"))
+    st.write("Trained models saved to models/ directory")
+except Exception as e:
+    st.write("Warning: could not save models:", e)
+
 """### 5.4. Prediction Functionality for New Students (using Linear Regression as the best model for this example)"""
 
-attendance = float(input("Enter Attendance (%): "))
-assignment = float(input("Enter Assignment Score: "))
-internal = float(input("Enter Internal Assessment Score: "))
-quiz = float(input("Enter Quiz Score: "))
-study_hours = float(input("Enter Study Hours Per Day: "))
-performance_index = (
-    attendance +
-    assignment +
-    internal +
-    quiz
-) / 4
-new_student = pd.DataFrame(
-    [[
-        attendance,
-        assignment,
-        internal,
-        quiz,
-        study_hours,
-        performance_index
-    ]],
-    columns=
-    [
-        "Attendance",
-        "Assignment",
-        "InternalAssessment",
-        "Quiz",
-        "StudyHours",
-        "PerformanceIndex"
-    ]
-)
+st.sidebar.header("Predict for New Student")
+attendance = st.sidebar.number_input("Attendance (%)", min_value=0.0, max_value=100.0, value=75.0)
+assignment = st.sidebar.number_input("Assignment Score", min_value=0.0, max_value=100.0, value=75.0)
+internal = st.sidebar.number_input("Internal Assessment Score", min_value=0.0, max_value=100.0, value=75.0)
+quiz = st.sidebar.number_input("Quiz Score", min_value=0.0, max_value=100.0, value=75.0)
+study_hours = st.sidebar.number_input("Study Hours Per Day", min_value=0.0, max_value=24.0, value=2.0)
+performance_index = (attendance + assignment + internal + quiz) / 4
+new_student = pd.DataFrame([[attendance, assignment, internal, quiz, study_hours, performance_index]],
+                           columns=["Attendance", "Assignment", "InternalAssessment", "Quiz", "StudyHours", "PerformanceIndex"])
 
-predicted_marks_array = linear_model.predict(new_student)
-predicted_mark_scalar = predicted_marks_array[0]
-predicted_mark_clipped = max(0, min(100, predicted_mark_scalar))
-
-print("\nPredicted Final Marks =", round(predicted_mark_clipped, 2))
-
-if predicted_mark_clipped >= 60:
-    print("Status: Pass")
-else:
-    print("Status: Fail")
+if st.sidebar.button("Predict (Linear Regression)"):
+    try:
+        preds = linear_model.predict(new_student)
+        pred = float(preds[0])
+        pred_clipped = max(0, min(100, pred))
+        st.sidebar.write("Predicted Final Marks:", round(pred_clipped, 2))
+        st.sidebar.write("Status:", "Pass" if pred_clipped >= 60 else "Fail")
+    except Exception as e:
+        st.sidebar.error(f"Prediction failed: {e}")
 
 """## 6. Classification Task: Predicting Pass/Fail Status
 
@@ -209,10 +205,10 @@ else:
 
 df['PassFail'] = df['FinalMarks'].apply(lambda x: 'Pass' if x >60 else 'Fail')
 
-print("DataFrame with new 'PassFail' column:")
-display(df[['FinalMarks', 'PassFail']].head())
-print('\nValue Counts for PassFail:')
-print(df['PassFail'].value_counts())
+st.write("DataFrame with new 'PassFail' column:")
+st.write(df[['FinalMarks', 'PassFail']].head())
+st.write('\nValue Counts for PassFail:')
+st.write(df['PassFail'].value_counts())
 
 """### Data Splitting for Classification"""
 
