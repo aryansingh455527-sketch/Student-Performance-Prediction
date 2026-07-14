@@ -356,6 +356,8 @@ average_mae_lr_cv, average_r2_lr_cv = perform_regression_cross_validation(linear
 """### 8.2. Cross-Validation for Classification (Logistic Regression and Decision Tree)"""
 
 def perform_classification_cross_validation(model, X, y_encoded, model_name):
+    from sklearn.model_selection import StratifiedKFold, cross_val_score
+
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
     accuracy_scores = cross_val_score(model, X, y_encoded, cv=skf, scoring='accuracy')
@@ -364,20 +366,9 @@ def perform_classification_cross_validation(model, X, y_encoded, model_name):
     f1_scores = cross_val_score(model, X, y_encoded, cv=skf, scoring='f1')
 
     print(f"\n{model_name} Cross-Validation Metrics:")
-    print("Accuracy Scores:", [round(score, 2) for score in accuracy_scores])
-    print("Average Accuracy:", round(accuracy_scores.mean(), 2))
-    print("Precision Scores:", [round(score, 2) for score in precision_scores])
-    print("Average Precision:", round(precision_scores.mean(), 2))
-    print("Recall Scores:", [round(score, 2) for score in recall_scores])
-    print("Average Recall:", round(recall_scores.mean(), 2))
-    print("F1-Score Scores:", [round(score, 2) for score in f1_scores])
-    print("Average F1-Score:", round(f1_scores.mean(), 2))
+    print(f"Average Accuracy: {accuracy_scores.mean():.2f}")
+    print(f"Average Precision: {precision_scores.mean():.2f}")
+    print(f"Average Recall: {recall_scores.mean():.2f}")
+    print(f"Average F1-Score: {f1_scores.mean():.2f}")
+
     return accuracy_scores.mean(), precision_scores.mean(), recall_scores.mean(), f1_scores.mean()
-
-print("\n--- Logistic Regression Cross-Validation ---")
-average_accuracy_lr_cv, average_precision_lr_cv, average_recall_lr_cv, average_f1_lr_cv = \
-    perform_classification_cross_validation(log_reg_model, X_clf, y_clf_encoded, "Logistic Regression")
-
-print("\n--- Decision Tree Classifier Cross-Validation ---")
-average_accuracy_dt_cv, average_precision_dt_cv, average_recall_dt_cv, average_f1_dt_cv = \
-    perform_classification_cross_validation(dt_model, X_clf, y_clf_encoded, "Decision Tree Classifier")
